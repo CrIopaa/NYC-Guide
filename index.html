@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>NYC Guide - Ultimate City App</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Your ultimate NYC companion - Photography spots, restaurants, bars, museums, kid-friendly places, and iconic cinema locations">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NYC Guide">
+    
+    <!-- App Icon -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' style='stop-color:%23667eea'/><stop offset='100%25' style='stop-color:%23764ba2'/></linearGradient></defs><rect width='512' height='512' rx='100' fill='url(%23g)'/><text x='256' y='380' font-size='300' text-anchor='middle' fill='white'>🗽</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23667eea'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white'>🗽</text></svg>">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            -webkit-overflow-scrolling: touch;
+            overflow-y: scroll;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        /* Main Menu */
+        .main-menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .menu-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #333;
+            -webkit-tap-highlight-color: rgba(102, 126, 234, 0.3);
+            touch-action: manipulation;
+        }
+
+        .menu-card:hover,
+        .menu-card:active {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .menu-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .menu-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .menu-count {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* Section View */
+        .section-view {
+            display: none;
+        }
+
+        .section-view.active {
+            display: block;
+        }
+
+        .back-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            margin: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background 0.3s ease;
+            -webkit-tap-highlight-color: rgba(85, 104, 211, 0.5);
+            touch-action: manipulation;
+        }
+
+        .back-button:hover,
+        .back-button:active {
+            background: #5568d3;
+        }
+
+        .section-header {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .section-subtitle {
+            color: #666;
+            font-size: 1em;
+        }
+
+        /* Near Me Feature */
+        .near-me-container {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .near-me-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            -webkit-tap-highlight-color: rgba(102, 126, 234, 0.5);
+            touch-action: manipulation;
+        }
+
+        .near-me-button:hover,
+        .near-me-button:active {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .near-me-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .location-status {
+            flex: 1;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .distance {
+            min-width: 80px;
+            text-align: right;
+            font-size: 0.9em;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* List Items */
+        .list-container {
+            padding: 20px;
+        }
+
+        .spot-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            text-decoration: none;
+            color: #333;
+            transition: background 0.2s ease;
+            -webkit-tap-highlight-color: rgba(102, 126, 234, 0.1);
+            touch-action: manipulation;
+        }
+
+        .spot-item:hover,
+        .spot-item:active {
+            background: #f8f9fa;
+        }
+
+        .spot-item:last-child {
+            border-bottom: none;
+        }
+
+        .rank {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #667eea;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .rank.top10 {
+            color: #d4af37;
+            font-size: 1.4em;
+        }
+
+        .rank.top25 {
+            color: #c0c0c0;
+        }
+
+        .spot-info {
+            flex: 1;
+            margin-left: 20px;
+        }
+
+        .spot-name {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .spot-location {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .arrow {
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 600px) {
+            .main-menu {
+                grid-template-columns: 1fr;
+            }
+
+            .rank {
+                min-width: 40px;
+                font-size: 1em;
+            }
+
+            .spot-name {
+                font-size: 1em;
+            }
+
+            .spot-location {
+                font-size: 0.85em;
+            }
+        }
+
+        /* Install Prompt */
+        .install-prompt {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            margin: 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .install-prompt.hidden {
+            display: none;
+        }
+
+        .install-text {
+            flex: 1;
+        }
+
+        .install-button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            -webkit-tap-highlight-color: rgba(102, 126, 234, 0.3);
+            touch-action: manipulation;
+        }
+
+        .close-prompt {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 0 5px;
+            -webkit-tap-highlight-color: rgba(255, 255, 255, 0.3);
+            touch-action: manipulation;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗽 NYC GUIDE</h1>
+            <p>Your Ultimate New York City Companion</p>
+        </div>
+
+        <!-- Install Prompt -->
+        <div id="installPrompt" class="install-prompt hidden">
+            <div class="install-text">
+                <strong>📱 Install this app!</strong><br>
+                <small>Add to your home screen for quick access</small>
+            </div>
+            <button class="install-button" onclick="showInstallInstructions()">How?</button>
+            <button class="close-prompt" onclick="closeInstallPrompt()">×</button>
+        </div>
+
+        <!-- Main Menu -->
+        <div id="mainMenu" class="main-menu">
+            <div class="menu-card" onclick="showSection('photography')">
+                <div class="menu-icon">📸</div>
+                <div class="menu-title">Photography Spots</div>
+                <div class="menu-count">100 locations</div>
+            </div>
+
+            <div class="menu-card" onclick="showSection('food')">
+                <div class="menu-icon">🍕</div>
+                <div class="menu-title">Food Spots</div>
+                <div class="menu-count">100 restaurants</div>
+            </div>
+
+            <div class="menu-card" onclick="showSection('drinks')">
+                <div class="menu-icon">🍸</div>
+                <div class="menu-title">Drink Spots</div>
+                <div class="menu-count">100 bars & cafes</div>
+            </div>
+
+            <div class="menu-card" onclick="showSection('kids')">
+                <div class="menu-icon">🧸</div>
+                <div class="menu-title">Kid Spots</div>
+                <div class="menu-count">20 family places</div>
+            </div>
+
+            <div class="menu-card" onclick="showSection('museums')">
+                <div class="menu-icon">🏛️</div>
+                <div class="menu-title">Museums</div>
+                <div class="menu-count">50 museums</div>
+            </div>
+
+            <div class="menu-card" onclick="showSection('cinema')">
+                <div class="menu-icon">🎬</div>
+                <div class="menu-title">Iconic Cinema Spots</div>
+                <div class="menu-count">50 film locations</div>
+            </div>
+        </div>
+
+        <!-- Photography Section -->
+        <div id="photographySection" class="section-view">
+            <button class="back-button" onclick="showMenu()">← Back to Menu</button>
+            <div class="section-header">
+                <div class="section-title">📸 Photography Spots</div>
+                <div class="section-subtitle">Top 100 street photography locations in NYC</div>
+            </div>
+            <div class="near-me-container">
+                <button class="near-me-button" onclick="sortByNearMe('photography')" id="nearMeBtn-photography">
+                    📍 Sort by Near Me
+                </button>
+                <div class="location-status" id="locationStatus-photography">Click to find spots near you</div>
+            </div>
+            <div class="list-container" id="photographyList"></div>
+        </div>
+
+        <!-- Food Section -->
+        <div id="foodSection" class="section-view">
+            <button class="back-button" onclick="showMenu()">← Back to Menu</button>
+            <div class="section-header">
+                <div class="section-title">🍕 Food Spots</div>
+                <div class="section-subtitle">Top 100 restaurants and food spots in NYC</div>
+            </div>
+            <div class="near-me-container">
+                <button class="near-me-button" onclick="sortByNearMe('food')" id="nearMeBtn-food">
+                    📍 Sort by Near Me
+                </button>
+                <div class="location-status" id="locationStatus-food">Click to find spots near you</div>
+            </div>
+            <div class="list-container" id="foodList"></div>
+        </div>
+
+        <!-- Drinks Section -->
+        <div id="drinksSection" class="section-view">
+            <button class="back-button" onclick="showMenu()">← Back to Menu</button>
+            <div class="section-header">
+                <div class="section-title">🍸 Drink Spots</div>
+                <div class="section-subtitle">Top 100 bars, cafes, and drink spots in NYC</div>
+            </div>
+            <div class="near-me-container">
+                <button class="near-me-button" onclick="sortByNearMe('drinks')" id="nearMeBtn-drinks">
+                    📍 Sort by Near Me
+                </button>
+                <div class="location-status" id="locationStatus-drinks">Click to find spots near you</div>
+            </div>
+            <div class="list-container" id="drinksList"></div>
+        </div>
+
+        <!-- Kids Section -->
+        <div id="kidsSection" class="section-view">
+            <button class="back-button" onclick="showMenu()">← Back to Menu</button>
+            <div class="section-header">
+                <div class="section-title">🧸 Kid Spots</div>
+                <div class="section-subtitle">Top 20 places perfect for toddlers and young children</div>
+            </div>
+            <div class="near-me-container">
+                <button class="near-me-button" onclick="sortByNearMe('kids')" id="nearMeBtn-kids">
+                    📍 Sort by Near Me
+                </button>
+                <div class="location-status" id="locationStatus-kids">Click to find spots near you</div>
+            </div>
+            <div class="list-container" id="kidsList"></div>
+        </div>
+
+        <!-- Museums Section -->
+        <div id="museumsSection" class="section-view">
+            <button class="back-button" onclick="showMenu()">← Back to Menu</button>
+            <div class="section-header">
+                <div class="section-title">🏛️ Museums</div>
+                <div class="section-subtitle">Top 50 museums in Manhattan and nearby areas</div>
+            </div>
+            <div class="near-me-container">
+                <button class="near-me-button" onclick="sortByNearMe('museums')" id="nearMeBtn-museums">
+                    📍 Sort by Near Me
+                </button>
+                <div class="location-status" id="locationStatus-museums">Click to find spots near you</div>
+            </div>
+            <div class="list-container" id="museumsList"></div>
+        </div>
+
+        <!-- Cinema Spots Section -->
+        <div id="cinemaSection" class="section-view">
+            <button class="back-button" onclick="showMenu()">← Back to Menu</button>
+            <div class="section-header">
+                <div class="section-title">🎬 Iconic Cinema Spots</div>
+                <div class="section-subtitle">Famous locations from movies, TV shows, and pop culture</div>
+            </div>
+            <div class="near-me-container">
+                <button class="near-me-button" onclick="sortByNearMe('cinema')" id="nearMeBtn-cinema">
+                    📍 Sort by Near Me
+                </button>
+                <div class="location-status" id="locationStatus-cinema">Click to find spots near you</div>
+            </div>
+            <div class="list-container" id="cinemaList"></div>
+        </div>
+    </div>
+
+    <script>
+        // Photography Spots Data
+        const photographySpots = [
+            { name: "Times Square", location: "Broadway & 7th Ave, Manhattan", coords: { lat: 40.7580, lng: -73.9855 } },
+            { name: "Brooklyn Bridge", location: "Brooklyn Bridge, Manhattan/Brooklyn", coords: { lat: 40.7061, lng: -73.9969 } },
+            { name: "Grand Central Terminal", location: "89 E 42nd St, Manhattan", coords: { lat: 40.7527, lng: -73.9772 } },
+            { name: "Central Park - Bethesda Terrace", location: "Central Park, Manhattan" },
+            { name: "The High Line", location: "Gansevoort St to 34th St, Manhattan" },
+            { name: "DUMBO (Manhattan Bridge View)", location: "Washington St, Brooklyn" },
+            { name: "Flatiron Building", location: "Broadway & 5th Ave, Manhattan" },
+            { name: "Washington Square Park", location: "Washington Square, Manhattan" },
+            { name: "The Oculus (WTC Transportation Hub)", location: "World Trade Center, Manhattan" },
+            { name: "Chinatown", location: "Canal St & Mott St, Manhattan" },
+            { name: "SoHo Cast-Iron District", location: "Greene St, Manhattan" },
+            { name: "Williamsburg - Bedford Avenue", location: "Bedford Ave, Brooklyn" },
+            { name: "Coney Island Boardwalk", location: "Riegelmann Boardwalk, Brooklyn" },
+            { name: "Rockefeller Center", location: "45 Rockefeller Plaza, Manhattan" },
+            { name: "Staten Island Ferry Terminal", location: "4 South St, Manhattan" },
+            { name: "Lower East Side", location: "Orchard St & Delancey St, Manhattan" },
+            { name: "Union Square", location: "Union Square, Manhattan" },
+            { name: "Brooklyn Heights Promenade", location: "Columbia Heights, Brooklyn" },
+            { name: "Fifth Avenue (Midtown)", location: "5th Ave & 50th St, Manhattan" },
+            { name: "East Village - St. Marks Place", location: "St Marks Pl, Manhattan" },
+            { name: "Bushwick Collective (Street Art)", location: "Troutman St, Brooklyn" },
+            { name: "Wall Street - Financial District", location: "Wall St & Broad St, Manhattan" },
+            { name: "Chelsea Market", location: "75 9th Ave, Manhattan" },
+            { name: "Meatpacking District", location: "9th Ave & 14th St, Manhattan" },
+            { name: "Harlem - 125th Street", location: "125th St & Malcolm X Blvd, Manhattan" },
+            { name: "Central Park - Bow Bridge", location: "Central Park West Side, Manhattan" },
+            { name: "Columbus Circle", location: "Columbus Circle, Manhattan" },
+            { name: "Madison Square Park", location: "Madison Ave & 23rd St, Manhattan" },
+            { name: "Herald Square", location: "Broadway & 6th Ave, Manhattan" },
+            { name: "Penn Station Area", location: "7th Ave & 33rd St, Manhattan" },
+            { name: "Hudson Yards & The Vessel", location: "Hudson Yards, Manhattan" },
+            { name: "Little Italy", location: "Mulberry St, Manhattan" },
+            { name: "Tribeca", location: "Franklin St, Manhattan" },
+            { name: "Greenwich Village", location: "Bleecker St, Manhattan" },
+            { name: "Bryant Park", location: "6th Ave & 42nd St, Manhattan" },
+            { name: "Empire State Building Area", location: "5th Ave & 34th St, Manhattan" },
+            { name: "One World Trade Center", location: "285 Fulton St, Manhattan" },
+            { name: "Brooklyn Bridge Park", location: "Brooklyn Bridge Park, Brooklyn" },
+            { name: "Prospect Park - Grand Army Plaza", location: "Grand Army Plaza, Brooklyn" },
+            { name: "Central Park - The Mall", location: "The Mall, Central Park, Manhattan" },
+            { name: "Stone Street", location: "Stone St, Manhattan" },
+            { name: "New York Public Library", location: "5th Ave & 42nd St, Manhattan" },
+            { name: "Seaport District", location: "Fulton St, Manhattan" },
+            { name: "Roosevelt Island Tramway", location: "2nd Ave & 59th St, Manhattan" },
+            { name: "Queensboro Bridge", location: "Queensboro Bridge, Manhattan/Queens" },
+            { name: "Jackson Heights - Diversity Plaza", location: "74th St & Roosevelt Ave, Queens" },
+            { name: "Flushing - Main Street", location: "Main St, Flushing, Queens" },
+            { name: "Astoria - 30th Avenue", location: "30th Ave, Queens" },
+            { name: "Red Hook - Brooklyn Waterfront", location: "Van Brunt St, Brooklyn" },
+            { name: "Park Slope - 7th Avenue", location: "7th Ave, Brooklyn" },
+            { name: "Brighton Beach - Little Odessa", location: "Brighton Beach Ave, Brooklyn" },
+            { name: "Greenpoint - Waterfront", location: "Franklin St, Brooklyn" },
+            { name: "Fort Greene Park", location: "Fort Greene Park, Brooklyn" },
+            { name: "Domino Park", location: "Kent Ave, Brooklyn" },
+            { name: "McCarren Park", location: "McCarren Park, Brooklyn" },
+            { name: "Alphabet City - Avenue A", location: "Ave A & 7th St, Manhattan" },
+            { name: "Nolita", location: "Mulberry St & Prince St, Manhattan" },
+            { name: "Bowery", location: "Bowery, Manhattan" },
+            { name: "Essex Street Market", location: "88 Essex St, Manhattan" },
+            { name: "Canal Street", location: "Canal St, Manhattan" },
+            { name: "Metropolitan Museum Steps", location: "1000 5th Ave, Manhattan" },
+            { name: "Lincoln Center", location: "10 Lincoln Center Plaza, Manhattan" },
+            { name: "Columbus Avenue - UWS", location: "Columbus Ave, Manhattan" },
+            { name: "Riverside Park", location: "Riverside Park, Manhattan" },
+            { name: "Apollo Theater - Harlem", location: "253 W 125th St, Manhattan" },
+            { name: "Arthur Avenue - The Bronx", location: "Arthur Ave, Bronx" },
+            { name: "Yankee Stadium Area", location: "161st St & River Ave, Bronx" },
+            { name: "City Island - The Bronx", location: "City Island Ave, Bronx" },
+            { name: "Smorgasburg Williamsburg", location: "East River State Park, Brooklyn" },
+            { name: "Industry City", location: "220 36th St, Brooklyn" },
+            { name: "Sunset Park - Brooklyn", location: "Sunset Park, Brooklyn" },
+            { name: "Brooklyn Navy Yard", location: "Brooklyn Navy Yard, Brooklyn" },
+            { name: "Gantry Plaza State Park", location: "Gantry Plaza, Queens" },
+            { name: "Long Island City - MoMA PS1", location: "22-25 Jackson Ave, Queens" },
+            { name: "Rockaway Beach Boardwalk", location: "Rockaway Beach, Queens" },
+            { name: "Socrates Sculpture Park", location: "32-01 Vernon Blvd, Queens" },
+            { name: "Corona - Queens", location: "Roosevelt Ave, Corona" },
+            { name: "St. George Terminal - Staten Island", location: "St George, Staten Island" },
+            { name: "Governors Island", location: "Governors Island, NY" },
+            { name: "Chelsea Piers", location: "62 Chelsea Piers, Manhattan" },
+            { name: "Charging Bull - Wall Street", location: "Broadway & Morris St, Manhattan" },
+            { name: "Chelsea - West 23rd Street", location: "W 23rd St, Manhattan" },
+            { name: "Radio City Music Hall", location: "1260 6th Ave, Manhattan" },
+            { name: "St. Patrick's Cathedral", location: "5th Ave & 50th St, Manhattan" },
+            { name: "Grand Army Plaza Entrance", location: "Central Park S & 5th Ave, Manhattan" },
+            { name: "Brooklyn Botanic Garden Area", location: "990 Washington Ave, Brooklyn" },
+            { name: "Barclays Center Area", location: "Atlantic Ave, Brooklyn" },
+            { name: "Court Street - Brooklyn Heights", location: "Court St, Brooklyn" },
+            { name: "Smith Street - Carroll Gardens", location: "Smith St, Brooklyn" },
+            { name: "Atlantic Avenue - Brooklyn", location: "Atlantic Ave, Brooklyn" },
+            { name: "Dyker Heights (Christmas Lights)", location: "Dyker Heights, Brooklyn" },
+            { name: "Bay Ridge - 86th Street", location: "86th St, Brooklyn" },
+            { name: "Avenue U - Brooklyn", location: "Avenue U, Brooklyn" },
+            { name: "Times Square Subway Station", location: "42nd St Station, Manhattan" },
+            { name: "Port Authority Bus Terminal", location: "625 8th Ave, Manhattan" },
+            { name: "Hell's Kitchen", location: "9th Ave & 45th St, Manhattan" },
+            { name: "Madison Avenue - Upper East Side", location: "Madison Ave & 72nd St, Manhattan" },
+            { name: "Museum Mile", location: "5th Ave & 82nd St, Manhattan" },
+            { name: "Lexington Avenue", location: "Lexington Ave & 59th St, Manhattan" },
+            { name: "Park Avenue", location: "Park Ave & 57th St, Manhattan" }
+        ];
+
+        // Food Spots Data
+        const foodSpots = [
+            { name: "Joe's Pizza", location: "7 Carmine St, Manhattan" },
+            { name: "Katz's Delicatessen", location: "205 E Houston St, Manhattan" },
+            { name: "Peter Luger Steak House", location: "178 Broadway, Brooklyn" },
+            { name: "Shake Shack (Madison Square Park)", location: "Madison Square Park, Manhattan" },
+            { name: "Russ & Daughters", location: "179 E Houston St, Manhattan" },
+            { name: "Lombardi's Pizza", location: "32 Spring St, Manhattan" },
+            { name: "Xi'an Famous Foods", location: "Multiple Locations" },
+            { name: "Levain Bakery", location: "167 W 74th St, Manhattan" },
+            { name: "Halal Guys", location: "53rd & 6th Ave, Manhattan" },
+            { name: "Gramercy Tavern", location: "42 E 20th St, Manhattan" },
+            { name: "Momofuku Noodle Bar", location: "171 1st Ave, Manhattan" },
+            { name: "Di Fara Pizza", location: "1424 Avenue J, Brooklyn" },
+            { name: "Le Bernardin", location: "155 W 51st St, Manhattan" },
+            { name: "Eleven Madison Park", location: "11 Madison Ave, Manhattan" },
+            { name: "Carbone", location: "181 Thompson St, Manhattan" },
+            { name: "The Spotted Pig", location: "314 W 11th St, Manhattan" },
+            { name: "Ippudo", location: "65 4th Ave, Manhattan" },
+            { name: "Los Tacos No. 1", location: "Chelsea Market, Manhattan" },
+            { name: "Junior's Restaurant", location: "386 Flatbush Ave, Brooklyn" },
+            { name: "Balthazar", location: "80 Spring St, Manhattan" },
+            { name: "Motorino", location: "349 E 12th St, Manhattan" },
+            { name: "Marea", location: "240 Central Park S, Manhattan" },
+            { name: "Daniel", location: "60 E 65th St, Manhattan" },
+            { name: "Per Se", location: "10 Columbus Circle, Manhattan" },
+            { name: "Blue Hill", location: "75 Washington Pl, Manhattan" },
+            { name: "ABC Kitchen", location: "35 E 18th St, Manhattan" },
+            { name: "RedFarm", location: "529 Hudson St, Manhattan" },
+            { name: "Ivan Ramen", location: "25 Clinton St, Manhattan" },
+            { name: "Doughnut Plant", location: "379 Grand St, Manhattan" },
+            { name: "Magnolia Bakery", location: "401 Bleecker St, Manhattan" },
+            { name: "Veselka", location: "144 2nd Ave, Manhattan" },
+            { name: "Barney Greengrass", location: "541 Amsterdam Ave, Manhattan" },
+            { name: "Mission Chinese Food", location: "171 E Broadway, Manhattan" },
+            { name: "Roberta's Pizza", location: "261 Moore St, Brooklyn" },
+            { name: "Lucali", location: "575 Henry St, Brooklyn" },
+            { name: "L&B Spumoni Gardens", location: "2725 86th St, Brooklyn" },
+            { name: "Totonno's Pizzeria", location: "1524 Neptune Ave, Brooklyn" },
+            { name: "Grimaldi's", location: "1 Front St, Brooklyn" },
+            { name: "Juliana's Pizza", location: "19 Old Fulton St, Brooklyn" },
+            { name: "Emmy Squared", location: "364 Grand St, Brooklyn" },
+            { name: "Mile End Delicatessen", location: "53 Bond St, Brooklyn" },
+            { name: "Smorgasburg", location: "90 Kent Ave, Brooklyn" },
+            { name: "Artichoke Basille's Pizza", location: "328 E 14th St, Manhattan" },
+            { name: "Prince Street Pizza", location: "27 Prince St, Manhattan" },
+            { name: "Joe & Pat's Pizzeria", location: "1758 Victory Blvd, Staten Island" },
+            { name: "Wo Hop", location: "17 Mott St, Manhattan" },
+            { name: "Joe's Shanghai", location: "9 Pell St, Manhattan" },
+            { name: "Golden Unicorn", location: "18 E Broadway, Manhattan" },
+            { name: "Nom Wah Tea Parlor", location: "13 Doyers St, Manhattan" },
+            { name: "Vanessa's Dumpling House", location: "118 Eldridge St, Manhattan" },
+            { name: "Xi'an Famous Foods (Chinatown)", location: "67 Bayard St, Manhattan" },
+            { name: "Hop Kee", location: "21 Mott St, Manhattan" },
+            { name: "Great NY Noodletown", location: "28 Bowery, Manhattan" },
+            { name: "Peking Duck House", location: "28 Mott St, Manhattan" },
+            { name: "Joe's Ginger", location: "113 Mott St, Manhattan" },
+            { name: "New Malaysia Restaurant", location: "48 Bowery, Manhattan" },
+            { name: "Eataly NYC Flatiron", location: "200 5th Ave, Manhattan" },
+            { name: "Gotham Bar and Grill", location: "12 E 12th St, Manhattan" },
+            { name: "Union Square Cafe", location: "101 E 19th St, Manhattan" },
+            { name: "Corner Bistro", location: "331 W 4th St, Manhattan" },
+            { name: "The Burger Joint", location: "119 W 56th St, Manhattan" },
+            { name: "Patsy's Pizzeria", location: "2287 1st Ave, Manhattan" },
+            { name: "John's of Bleecker Street", location: "278 Bleecker St, Manhattan" },
+            { name: "Totto Ramen", location: "366 W 52nd St, Manhattan" },
+            { name: "Hide-Chan Ramen", location: "248 E 52nd St, Manhattan" },
+            { name: "Mu Ramen", location: "1209 Jackson Ave, Queens" },
+            { name: "SriPraPhai", location: "64-13 39th Ave, Queens" },
+            { name: "Taverna Kyclades", location: "33-07 Ditmars Blvd, Queens" },
+            { name: "Arepa Lady", location: "79-01 Roosevelt Ave, Queens" },
+            { name: "King of Falafel & Shawarma", location: "30-16 Steinway St, Queens" },
+            { name: "M. Wells Steakhouse", location: "43-15 Crescent St, Queens" },
+            { name: "Casa Enrique", location: "5-48 49th Ave, Queens" },
+            { name: "Mu Ramen", location: "1209 Jackson Ave, Queens" },
+            { name: "John Brown Smokehouse", location: "10-43 44th Dr, Queens" },
+            { name: "The Creek and The Cave", location: "10-93 Jackson Ave, Queens" },
+            { name: "Pachanga Patterson", location: "33 Tinton Ave, Bronx" },
+            { name: "Zero Otto Nove", location: "2357 Arthur Ave, Bronx" },
+            { name: "Roberto's Restaurant", location: "603 Crescent Ave, Bronx" },
+            { name: "Joe's Restaurant", location: "1034 E Tremont Ave, Bronx" },
+            { name: "Taqueria Tlaxcalli", location: "2103 Starling Ave, Bronx" },
+            { name: "Court Street Grocers", location: "485 Court St, Brooklyn" },
+            { name: "Frankies Spuntino", location: "457 Court St, Brooklyn" },
+            { name: "Al di La Trattoria", location: "248 5th Ave, Brooklyn" },
+            { name: "Fette Sau", location: "354 Metropolitan Ave, Brooklyn" },
+            { name: "Hometown Bar-B-Que", location: "454 Van Brunt St, Brooklyn" },
+            { name: "Bamonte's", location: "32 Withers St, Brooklyn" },
+            { name: "Paulie Gee's", location: "60 Greenpoint Ave, Brooklyn" },
+            { name: "Marlow & Sons", location: "81 Broadway, Brooklyn" },
+            { name: "Diner", location: "85 Broadway, Brooklyn" },
+            { name: "Pies 'n' Thighs", location: "166 S 4th St, Brooklyn" },
+            { name: "Miss Ada", location: "184 DeKalb Ave, Brooklyn" },
+            { name: "Bunna Cafe", location: "1084 Flushing Ave, Brooklyn" },
+            { name: "Oxalis", location: "791 Washington Ave, Brooklyn" },
+            { name: "Lilia", location: "567 Union Ave, Brooklyn" },
+            { name: "Llama Inn", location: "50 Withers St, Brooklyn" },
+            { name: "Olmsted", location: "659 Vanderbilt Ave, Brooklyn" },
+            { name: "Oxomoco", location: "128 Greenpoint Ave, Brooklyn" }
+        ];
+
+        // Drink Spots Data
+        const drinkSpots = [
+            { name: "Dead Rabbit", location: "30 Water St, Manhattan" },
+            { name: "PDT (Please Don't Tell)", location: "113 St Marks Pl, Manhattan" },
+            { name: "Employees Only", location: "510 Hudson St, Manhattan" },
+            { name: "Angel's Share", location: "8 Stuyvesant St, Manhattan" },
+            { name: "Attaboy", location: "134 Eldridge St, Manhattan" },
+            { name: "Katana Kitten", location: "531 Hudson St, Manhattan" },
+            { name: "Dante", location: "79-81 MacDougal St, Manhattan" },
+            { name: "The NoMad Bar", location: "10 W 28th St, Manhattan" },
+            { name: "The Campbell", location: "Grand Central Terminal, Manhattan" },
+            { name: "King Cole Bar", location: "2 E 55th St, Manhattan" },
+            { name: "Bemelmans Bar", location: "35 E 76th St, Manhattan" },
+            { name: "Bathtub Gin", location: "132 9th Ave, Manhattan" },
+            { name: "The Rum House", location: "228 W 47th St, Manhattan" },
+            { name: "Pouring Ribbons", location: "225 Avenue B, Manhattan" },
+            { name: "Sweetwater Social", location: "643 Broadway, Manhattan" },
+            { name: "Mace", location: "35 W 8th St, Manhattan" },
+            { name: "Patent Pending", location: "49 W 27th St, Manhattan" },
+            { name: "Death & Co", location: "433 E 6th St, Manhattan" },
+            { name: "Little Branch", location: "20 7th Ave S, Manhattan" },
+            { name: "Slowly Shirley", location: "121 W 10th St, Manhattan" },
+            { name: "Bar Goto", location: "245 Eldridge St, Manhattan" },
+            { name: "Existing Conditions", location: "35 W 8th St, Manhattan" },
+            { name: "The Garret", location: "296 Bleecker St, Manhattan" },
+            { name: "Amor y Amargo", location: "443 E 6th St, Manhattan" },
+            { name: "Apotheke", location: "9 Doyers St, Manhattan" },
+            { name: "The Back Room", location: "102 Norfolk St, Manhattan" },
+            { name: "Lantern's Keep", location: "49 W 44th St, Manhattan" },
+            { name: "Raines Law Room", location: "48 W 17th St, Manhattan" },
+            { name: "Blacktail", location: "22 Battery Pl, Manhattan" },
+            { name: "Ghost Donkey", location: "4 Bleecker St, Manhattan" },
+            { name: "The Press Lounge", location: "653 11th Ave, Manhattan" },
+            { name: "230 Fifth Rooftop Bar", location: "230 5th Ave, Manhattan" },
+            { name: "The Top of the Standard", location: "848 Washington St, Manhattan" },
+            { name: "Westlight", location: "111 N 12th St, Brooklyn" },
+            { name: "Berry Park", location: "4 Berry St, Brooklyn" },
+            { name: "The Shanty", location: "133 18th St, Brooklyn" },
+            { name: "Barely Disfigured", location: "52 S 1st St, Brooklyn" },
+            { name: "Maison Premiere", location: "298 Bedford Ave, Brooklyn" },
+            { name: "Clover Club", location: "210 Smith St, Brooklyn" },
+            { name: "Long Island Bar", location: "110 Atlantic Ave, Brooklyn" },
+            { name: "The Anchored Inn", location: "575 Court St, Brooklyn" },
+            { name: "Spuyten Duyvil", location: "359 Metropolitan Ave, Brooklyn" },
+            { name: "Weather Up", location: "589 Vanderbilt Ave, Brooklyn" },
+            { name: "Brooklyn Inn", location: "148 Hoyt St, Brooklyn" },
+            { name: "Leyenda", location: "221 Smith St, Brooklyn" },
+            { name: "Parklife", location: "245 Vanderbilt Ave, Brooklyn" },
+            { name: "The Four Horsemen", location: "295 Grand St, Brooklyn" },
+            { name: "Threes Brewing", location: "333 Douglass St, Brooklyn" },
+            { name: "Other Half Brewing", location: "195 Centre St, Brooklyn" },
+            { name: "Brooklyn Brewery", location: "79 N 11th St, Brooklyn" },
+            { name: "Sunshine Laundromat", location: "860 Manhattan Ave, Brooklyn" },
+            { name: "St. Mazie Bar & Supper Club", location: "345 Grand St, Brooklyn" },
+            { name: "Grand Army", location: "336 State St, Brooklyn" },
+            { name: "Featherweight", location: "135 Broadway, Brooklyn" },
+            { name: "Montero Bar & Grill", location: "73 Atlantic Ave, Brooklyn" },
+            { name: "Bossa Nova Civic Club", location: "1271 Myrtle Ave, Brooklyn" },
+            { name: "House of Yes", location: "2 Wyckoff Ave, Brooklyn" },
+            { name: "Union Pool", location: "484 Union Ave, Brooklyn" },
+            { name: "Dear Bushwick", location: "41 Wilson Ave, Brooklyn" },
+            { name: "The Commodore", location: "366 Metropolitan Ave, Brooklyn" },
+            { name: "Iona", location: "180 Grand St, Brooklyn" },
+            { name: "Boobie Trap", location: "308 Broome St, Manhattan" },
+            { name: "Blue Note Jazz Club", location: "131 W 3rd St, Manhattan" },
+            { name: "Village Vanguard", location: "178 7th Ave S, Manhattan" },
+            { name: "Smalls Jazz Club", location: "183 W 10th St, Manhattan" },
+            { name: "Cafe Wha?", location: "115 MacDougal St, Manhattan" },
+            { name: "The Bitter End", location: "147 Bleecker St, Manhattan" },
+            { name: "Pete's Tavern", location: "129 E 18th St, Manhattan" },
+            { name: "McSorley's Old Ale House", location: "15 E 7th St, Manhattan" },
+            { name: "Ear Inn", location: "326 Spring St, Manhattan" },
+            { name: "White Horse Tavern", location: "567 Hudson St, Manhattan" },
+            { name: "Fanelli Cafe", location: "94 Prince St, Manhattan" },
+            { name: "Old Town Bar", location: "45 E 18th St, Manhattan" },
+            { name: "Stumptown Coffee Roasters", location: "18 W 29th St, Manhattan" },
+            { name: "Blue Bottle Coffee (Rockefeller Center)", location: "30 Rockefeller Plaza, Manhattan" },
+            { name: "La Colombe Coffee Roasters", location: "270 Lafayette St, Manhattan" },
+            { name: "Birch Coffee", location: "Multiple Locations" },
+            { name: "Irving Farm Coffee Roasters", location: "71 Irving Pl, Manhattan" },
+            { name: "Cafe Grumpy", location: "224 W 20th St, Manhattan" },
+            { name: "Think Coffee", location: "248 Mercer St, Manhattan" },
+            { name: "Devoción", location: "69 Grand St, Brooklyn" },
+            { name: "Toby's Estate Coffee", location: "125 N 6th St, Brooklyn" },
+            { name: "Milk Bar", location: "Multiple Locations" },
+            { name: "Two Hands", location: "164 Mott St, Manhattan" },
+            { name: "Jack's Wife Freda", location: "224 Lafayette St, Manhattan" },
+            { name: "Cafe Mogador", location: "101 St Marks Pl, Manhattan" },
+            { name: "Balthazar Bakery", location: "80 Spring St, Manhattan" },
+            { name: "Buvette", location: "42 Grove St, Manhattan" },
+            { name: "Caffe Reggio", location: "119 MacDougal St, Manhattan" },
+            { name: "McNally Jackson Cafe", location: "52 Prince St, Manhattan" },
+            { name: "Felix Roasting Co.", location: "450 Park Ave S, Manhattan" },
+            { name: "Bluestone Lane", location: "Multiple Locations" },
+            { name: "Ground Central Coffee Company", location: "155 E 52nd St, Manhattan" },
+            { name: "Joe Coffee Company", location: "Multiple Locations" },
+            { name: "Happy Bones", location: "394 Broome St, Manhattan" },
+            { name: "Abraço", location: "86 E 7th St, Manhattan" },
+            { name: "The Bean", location: "Multiple Locations" },
+            { name: "Everyman Espresso", location: "136 E 13th St, Manhattan" }
+        ];
+
+        // Kid Spots Data
+        const kidSpots = [
+            { name: "Central Park - Ancient Playground", location: "Ancient Playground, Central Park, Manhattan" },
+            { name: "Brooklyn Children's Museum", location: "145 Brooklyn Ave, Brooklyn" },
+            { name: "Children's Museum of Manhattan", location: "212 W 83rd St, Manhattan" },
+            { name: "Chelsea Piers - Field House", location: "62 Chelsea Piers, Manhattan" },
+            { name: "New York Hall of Science", location: "47-01 111th St, Queens" },
+            { name: "Bronx Zoo - Children's Zoo", location: "2300 Southern Blvd, Bronx" },
+            { name: "Central Park Zoo", location: "64th St & 5th Ave, Manhattan" },
+            { name: "Prospect Park Zoo", location: "450 Flatbush Ave, Brooklyn" },
+            { name: "Staten Island Children's Museum", location: "1000 Richmond Terrace, Staten Island" },
+            { name: "Brooklyn Bridge Park - Pier 6 Playground", location: "Pier 6, Brooklyn Bridge Park, Brooklyn" },
+            { name: "Madison Square Park Playground", location: "Madison Square Park, Manhattan" },
+            { name: "Imagination Playground", location: "Burling Slip, Manhattan" },
+            { name: "Teardrop Park Playground", location: "Warren St, Manhattan" },
+            { name: "Hippo Playground (Riverside Park)", location: "Riverside Park, 91st St, Manhattan" },
+            { name: "The Egg (Central Park)", location: "Central Park, 73rd St, Manhattan" },
+            { name: "Domino Park Playground", location: "15 River St, Brooklyn" },
+            { name: "Intrepid Sea, Air & Space Museum", location: "Pier 86, W 46th St, Manhattan" },
+            { name: "New York Transit Museum", location: "99 Schermerhorn St, Brooklyn" },
+            { name: "Brooklyn Botanic Garden - Discovery Garden", location: "990 Washington Ave, Brooklyn" },
+            { name: "LeFrak Center at Lakeside (Prospect Park)", location: "171 East Dr, Brooklyn" }
+        ];
+
+        // Museums Data
+        const museums = [
+            { name: "The Metropolitan Museum of Art (The Met)", location: "1000 5th Ave, Manhattan" },
+            { name: "American Museum of Natural History", location: "200 Central Park West, Manhattan" },
+            { name: "Museum of Modern Art (MoMA)", location: "11 W 53rd St, Manhattan" },
+            { name: "The Guggenheim Museum", location: "1071 5th Ave, Manhattan" },
+            { name: "Whitney Museum of American Art", location: "99 Gansevoort St, Manhattan" },
+            { name: "The Frick Collection", location: "1 E 70th St, Manhattan" },
+            { name: "9/11 Memorial & Museum", location: "180 Greenwich St, Manhattan" },
+            { name: "Intrepid Sea, Air & Space Museum", location: "Pier 86, W 46th St, Manhattan" },
+            { name: "Museum of the City of New York", location: "1220 5th Ave, Manhattan" },
+            { name: "New Museum", location: "235 Bowery, Manhattan" },
+            { name: "The Morgan Library & Museum", location: "225 Madison Ave, Manhattan" },
+            { name: "Tenement Museum", location: "103 Orchard St, Manhattan" },
+            { name: "Ellis Island National Museum of Immigration", location: "Ellis Island, New York Harbor" },
+            { name: "The Cloisters", location: "99 Margaret Corbin Dr, Manhattan" },
+            { name: "Cooper Hewitt, Smithsonian Design Museum", location: "2 E 91st St, Manhattan" },
+            { name: "Jewish Museum", location: "1109 5th Ave, Manhattan" },
+            { name: "Museum of Arts and Design", location: "2 Columbus Circle, Manhattan" },
+            { name: "Rubin Museum of Art", location: "150 W 17th St, Manhattan" },
+            { name: "International Center of Photography", location: "79 Essex St, Manhattan" },
+            { name: "Museum of Chinese in America", location: "215 Centre St, Manhattan" },
+            { name: "National Museum of the American Indian", location: "1 Bowling Green, Manhattan" },
+            { name: "The Met Breuer", location: "945 Madison Ave, Manhattan" },
+            { name: "Neue Galerie", location: "1048 5th Ave, Manhattan" },
+            { name: "Museum at the Fashion Institute of Technology", location: "227 W 27th St, Manhattan" },
+            { name: "Hispanic Society Museum & Library", location: "613 W 155th St, Manhattan" },
+            { name: "Museum of Sex", location: "233 5th Ave, Manhattan" },
+            { name: "Madame Tussauds New York", location: "234 W 42nd St, Manhattan" },
+            { name: "Ripley's Believe It or Not!", location: "234 W 42nd St, Manhattan" },
+            { name: "The Skyscraper Museum", location: "39 Battery Pl, Manhattan" },
+            { name: "Fotografiska New York", location: "281 Park Ave S, Manhattan" },
+            { name: "National Geographic Encounter: Ocean Odyssey", location: "226 W 44th St, Manhattan" },
+            { name: "The Africa Center", location: "1280 5th Ave, Manhattan" },
+            { name: "El Museo del Barrio", location: "1230 5th Ave, Manhattan" },
+            { name: "Studio Museum in Harlem", location: "144 W 125th St, Manhattan" },
+            { name: "Children's Museum of Manhattan", location: "212 W 83rd St, Manhattan" },
+            { name: "Museum of Illusions", location: "77 8th Ave, Manhattan" },
+            { name: "Spyscape", location: "928 8th Ave, Manhattan" },
+            { name: "SeaGlass Carousel", location: "Battery Park, Manhattan" },
+            { name: "Museum of Mathematics (MoMath)", location: "11 E 26th St, Manhattan" },
+            { name: "Brooklyn Museum", location: "200 Eastern Pkwy, Brooklyn" },
+            { name: "Brooklyn Children's Museum", location: "145 Brooklyn Ave, Brooklyn" },
+            { name: "New York Transit Museum", location: "99 Schermerhorn St, Brooklyn" },
+            { name: "Brooklyn Historical Society", location: "128 Pierrepont St, Brooklyn" },
+            { name: "MoMA PS1", location: "22-25 Jackson Ave, Queens" },
+            { name: "Queens Museum", location: "New York City Building, Queens" },
+            { name: "Noguchi Museum", location: "9-01 33rd Rd, Queens" },
+            { name: "Museum of the Moving Image", location: "36-01 35th Ave, Queens" },
+            { name: "New York Hall of Science", location: "47-01 111th St, Queens" },
+            { name: "Staten Island Museum", location: "1000 Richmond Terrace, Staten Island" },
+            { name: "Snug Harbor Cultural Center", location: "1000 Richmond Terrace, Staten Island" }
+        ];
+
+        // Cinema Spots Data
+        const cinemaSpots = [
+            { name: "Katz's Delicatessen", location: "205 E Houston St, Manhattan (When Harry Met Sally)" },
+            { name: "Tom's Restaurant", location: "2880 Broadway, Manhattan (Seinfeld)" },
+            { name: "The Plaza Hotel", location: "768 5th Ave, Manhattan (Home Alone 2, The Great Gatsby)" },
+            { name: "Empire State Building", location: "20 W 34th St, Manhattan (King Kong, Sleepless in Seattle)" },
+            { name: "Grand Central Terminal", location: "89 E 42nd St, Manhattan (The Avengers, Madagascar)" },
+            { name: "Brooklyn Bridge", location: "Brooklyn Bridge, NY (I Am Legend, Godzilla)" },
+            { name: "Tiffany & Co. Flagship", location: "727 5th Ave, Manhattan (Breakfast at Tiffany's)" },
+            { name: "New York Public Library", location: "476 5th Ave, Manhattan (Ghostbusters, The Day After Tomorrow)" },
+            { name: "Washington Square Park Arch", location: "Washington Square Park, Manhattan (I Am Legend, August Rush)" },
+            { name: "Central Park - Bethesda Terrace", location: "Central Park, Manhattan (The Avengers, John Wick 2)" },
+            { name: "Times Square", location: "Times Square, Manhattan (Vanilla Sky, Spider-Man)" },
+            { name: "Flatiron Building", location: "175 5th Ave, Manhattan (Spider-Man, Godzilla)" },
+            { name: "Statue of Liberty", location: "Liberty Island, NY (Ghostbusters II, X-Men)" },
+            { name: "Rockefeller Center", location: "45 Rockefeller Plaza, Manhattan (Home Alone 2, 30 Rock)" },
+            { name: "McGolrick Park", location: "Russell St, Brooklyn (Girls - Hannah's apartment area)" },
+            { name: "Magnolia Bakery", location: "401 Bleecker St, Manhattan (Sex and the City)" },
+            { name: "Carrie's Stoop", location: "66 Perry St, Manhattan (Sex and the City)" },
+            { name: "DUMBO - Manhattan Bridge View", location: "Washington St, Brooklyn (Once Upon a Time in America)" },
+            { name: "Zabar's", location: "2245 Broadway, Manhattan (You've Got Mail)" },
+            { name: "The Metropolitan Museum of Art Steps", location: "1000 5th Ave, Manhattan (Gossip Girl, When Harry Met Sally)" },
+            { name: "Delmonico's Restaurant", location: "56 Beaver St, Manhattan (The Wolf of Wall Street)" },
+            { name: "Brooklyn Heights Promenade", location: "Pierrepont Pl, Brooklyn (Moonstruck, Annie Hall)" },
+            { name: "Oyster Bar (Grand Central)", location: "Grand Central Terminal, Manhattan (The Fisher King)" },
+            { name: "The Dakota Building", location: "1 W 72nd St, Manhattan (Rosemary's Baby, John Lennon residence)" },
+            { name: "Serendipity 3", location: "225 E 60th St, Manhattan (Serendipity)" },
+            { name: "Bow Bridge - Central Park", location: "Central Park, Manhattan (Spider-Man 3, Elf)" },
+            { name: "Tavern on the Green", location: "Central Park West, Manhattan (Ghostbusters, Wall Street)" },
+            { name: "Mast Brothers Chocolate", location: "111 N 3rd St, Brooklyn (Girls)" },
+            { name: "Strand Bookstore", location: "828 Broadway, Manhattan (Before We Go)" },
+            { name: "Washington Square Park Fountain", location: "Washington Square Park, Manhattan (Searching for Bobby Fischer)" },
+            { name: "Coney Island - Wonder Wheel", location: "3059 Denos D Vourderis Pl, Brooklyn (The Warriors, Requiem for a Dream)" },
+            { name: "The High Line", location: "Gansevoort St, Manhattan (The Adjustment Bureau)" },
+            { name: "Junior's Restaurant", location: "386 Flatbush Ave, Brooklyn (No Reservations)" },
+            { name: "Peter Luger Steak House", location: "178 Broadway, Brooklyn (The Sopranos)" },
+            { name: "Friends Apartment Building", location: "90 Bedford St, Manhattan (Friends - exterior)" },
+            { name: "Chrysler Building", location: "405 Lexington Ave, Manhattan (Spider-Man, Men in Black 3)" },
+            { name: "One World Trade Center", location: "285 Fulton St, Manhattan (The Dark Knight Rises)" },
+            { name: "Radio City Music Hall", location: "1260 6th Ave, Manhattan (Elf)" },
+            { name: "Guggenheim Museum", location: "1071 5th Ave, Manhattan (Men in Black, The International)" },
+            { name: "Lincoln Center", location: "10 Lincoln Center Plaza, Manhattan (Black Swan, The Producers)" },
+            { name: "Vessel at Hudson Yards", location: "20 Hudson Yards, Manhattan (In the Heights)" },
+            { name: "Apollo Theater", location: "253 W 125th St, Manhattan (Showtime at the Apollo)" },
+            { name: "The Cloisters", location: "99 Margaret Corbin Dr, Manhattan (In & Out)" },
+            { name: "Park Avenue", location: "Park Ave & 59th St, Manhattan (Breakfast at Tiffany's)" },
+            { name: "Chelsea Hotel", location: "222 W 23rd St, Manhattan (Sid and Nancy)" },
+            { name: "Lombardi's Pizza", location: "32 Spring St, Manhattan (The Irishman)" },
+            { name: "Joe's Pizza", location: "7 Carmine St, Manhattan (Spider-Man 2 - Tobey Maguire)" },
+            { name: "Veselka", location: "144 2nd Ave, Manhattan (Nick and Norah's Infinite Playlist)" },
+            { name: "The Ansonia", location: "2109 Broadway, Manhattan (Single White Female)" },
+            { name: "Madison Square Garden", location: "4 Pennsylvania Plaza, Manhattan (Rocky, Billions)" }
+        ];
+
+        function createGoogleMapsLink(name, location) {
+            const searchQuery = encodeURIComponent(`${name}, ${location}`);
+            return `https://www.google.com/maps/search/?api=1&query=${searchQuery}`;
+        }
+
+        // Near Me Functionality
+        let userLocation = null;
+
+        function getDistance(lat1, lon1, lat2, lon2) {
+            const R = 3959; // Earth's radius in miles
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function extractCoords(location) {
+            const coordsMap = {
+                'Times Square': { lat: 40.7580, lng: -73.9855 },
+                'Brooklyn Bridge': { lat: 40.7061, lng: -73.9969 },
+                'Grand Central': { lat: 40.7527, lng: -73.9772 },
+                'Central Park': { lat: 40.7829, lng: -73.9654 },
+                'Manhattan': { lat: 40.7831, lng: -73.9712 },
+                'Brooklyn': { lat: 40.6782, lng: -73.9442 },
+                'Queens': { lat: 40.7282, lng: -73.7949 },
+                'Bronx': { lat: 40.8448, lng: -73.8648 },
+                'Staten Island': { lat: 40.5795, lng: -74.1502 },
+                'SoHo': { lat: 40.7233, lng: -74.0030 },
+                'Williamsburg': { lat: 40.7081, lng: -73.9571 },
+                'Harlem': { lat: 40.8116, lng: -73.9465 },
+                'East Village': { lat: 40.7264, lng: -73.9815 },
+                'West Village': { lat: 40.7358, lng: -74.0036 },
+                'Upper East Side': { lat: 40.7736, lng: -73.9566 },
+                'Upper West Side': { lat: 40.7870, lng: -73.9754 },
+                'Chelsea': { lat: 40.7465, lng: -74.0014 },
+                'Tribeca': { lat: 40.7163, lng: -74.0086 }
+            };
+
+            for (let area in coordsMap) {
+                if (location.includes(area)) {
+                    return coordsMap[area];
+                }
+            }
+            
+            return { lat: 40.7831, lng: -73.9712 };
+        }
+
+        function sortByNearMe(section) {
+            const button = document.getElementById(`nearMeBtn-${section}`);
+            const status = document.getElementById(`locationStatus-${section}`);
+            
+            button.disabled = true;
+            button.textContent = '📍 Getting location...';
+            status.textContent = 'Requesting your location...';
+
+            if (!navigator.geolocation) {
+                status.textContent = 'Geolocation not supported by your browser';
+                button.disabled = false;
+                button.textContent = '📍 Sort by Near Me';
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+
+                    status.textContent = `Location found! Sorting by distance...`;
+                    button.textContent = '✓ Sorted by Distance';
+
+                    let spots;
+                    let containerId;
+                    if (section === 'photography') {
+                        spots = [...photographySpots];
+                        containerId = 'photographyList';
+                    } else if (section === 'food') {
+                        spots = [...foodSpots];
+                        containerId = 'foodList';
+                    } else if (section === 'drinks') {
+                        spots = [...drinkSpots];
+                        containerId = 'drinksList';
+                    } else if (section === 'kids') {
+                        spots = [...kidSpots];
+                        containerId = 'kidsList';
+                    } else if (section === 'museums') {
+                        spots = [...museums];
+                        containerId = 'museumsList';
+                    } else if (section === 'cinema') {
+                        spots = [...cinemaSpots];
+                        containerId = 'cinemaList';
+                    }
+
+                    spots.forEach(spot => {
+                        const spotCoords = extractCoords(spot.location);
+                        spot.distance = getDistance(
+                            userLocation.lat, 
+                            userLocation.lng,
+                            spotCoords.lat,
+                            spotCoords.lng
+                        );
+                    });
+
+                    spots.sort((a, b) => a.distance - b.distance);
+                    renderListWithDistance(spots, containerId);
+
+                    setTimeout(() => {
+                        button.disabled = false;
+                        button.textContent = '📍 Sort by Near Me';
+                    }, 2000);
+                },
+                (error) => {
+                    let errorMsg = 'Unable to get location';
+                    if (error.code === 1) errorMsg = 'Location permission denied - Enable in Settings';
+                    if (error.code === 2) errorMsg = 'Location unavailable';
+                    if (error.code === 3) errorMsg = 'Location request timeout';
+                    
+                    status.textContent = errorMsg;
+                    button.disabled = false;
+                    button.textContent = '📍 Try Again';
+                }
+            );
+        }
+
+        function renderListWithDistance(spots, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            spots.forEach((spot, index) => {
+                const rank = index + 1;
+                const link = document.createElement('a');
+                link.href = createGoogleMapsLink(spot.name, spot.location);
+                link.target = '_blank';
+                link.className = 'spot-item';
+                
+                let rankClass = 'rank';
+                if (rank <= 10) rankClass += ' top10';
+                else if (rank <= 25) rankClass += ' top25';
+                
+                const distanceText = spot.distance ? 
+                    `<div class="distance">${spot.distance.toFixed(1)} mi</div>` : 
+                    `<div class="arrow">→</div>`;
+                
+                link.innerHTML = `
+                    <div class="${rankClass}">${rank}</div>
+                    <div class="spot-info">
+                        <div class="spot-name">${spot.name}</div>
+                        <div class="spot-location">${spot.location}</div>
+                    </div>
+                    ${distanceText}
+                `;
+                
+                container.appendChild(link);
+            });
+        }
+
+        function renderList(spots, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            spots.forEach((spot, index) => {
+                const rank = index + 1;
+                const link = document.createElement('a');
+                link.href = createGoogleMapsLink(spot.name, spot.location);
+                link.target = '_blank';
+                link.className = 'spot-item';
+                
+                let rankClass = 'rank';
+                if (rank <= 10) rankClass += ' top10';
+                else if (rank <= 25) rankClass += ' top25';
+                
+                link.innerHTML = `
+                    <div class="${rankClass}">${rank}</div>
+                    <div class="spot-info">
+                        <div class="spot-name">${spot.name}</div>
+                        <div class="spot-location">${spot.location}</div>
+                    </div>
+                    <div class="arrow">→</div>
+                `;
+                
+                container.appendChild(link);
+            });
+        }
+
+        function showSection(section) {
+            document.getElementById('mainMenu').style.display = 'none';
+            
+            document.querySelectorAll('.section-view').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            if (section === 'photography') {
+                document.getElementById('photographySection').classList.add('active');
+                renderList(photographySpots, 'photographyList');
+            } else if (section === 'food') {
+                document.getElementById('foodSection').classList.add('active');
+                renderList(foodSpots, 'foodList');
+            } else if (section === 'drinks') {
+                document.getElementById('drinksSection').classList.add('active');
+                renderList(drinkSpots, 'drinksList');
+            } else if (section === 'kids') {
+                document.getElementById('kidsSection').classList.add('active');
+                renderList(kidSpots, 'kidsList');
+            } else if (section === 'museums') {
+                document.getElementById('museumsSection').classList.add('active');
+                renderList(museums, 'museumsList');
+            } else if (section === 'cinema') {
+                document.getElementById('cinemaSection').classList.add('active');
+                renderList(cinemaSpots, 'cinemaList');
+            }
+        }
+
+        function showMenu() {
+            document.getElementById('mainMenu').style.display = 'grid';
+            
+            document.querySelectorAll('.section-view').forEach(el => {
+                el.classList.remove('active');
+            });
+        }
+
+        // Install Prompt Functions
+        function showInstallInstructions() {
+            alert('📱 HOW TO INSTALL:\n\n1. Tap the Share button (⬆️) at the bottom\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" in the top right\n\nYou\'ll now have the app on your home screen!');
+        }
+
+        function closeInstallPrompt() {
+            document.getElementById('installPrompt').classList.add('hidden');
+            localStorage.setItem('installPromptClosed', 'true');
+        }
+
+        // Show install prompt on load (if not previously closed and not installed)
+        window.addEventListener('load', () => {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+            const promptClosed = localStorage.getItem('installPromptClosed');
+            
+            if (!isStandalone && !promptClosed) {
+                document.getElementById('installPrompt').classList.remove('hidden');
+            }
+        });
+
+        // Cache the app for offline use
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
+                    const CACHE_NAME = 'nyc-guide-v1';
+                    self.addEventListener('install', event => {
+                        event.waitUntil(self.skipWaiting());
+                    });
+                    self.addEventListener('activate', event => {
+                        event.waitUntil(self.clients.claim());
+                    });
+                `)).catch(() => {
+                    // Service worker registration failed, but app still works
+                });
+            });
+        }
+    </script>
+</body>
+</html>
